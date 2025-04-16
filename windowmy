@@ -5,3 +5,4 @@ if not game.CoreGui:FindFirstChild("ThunderScreen") then
     local ThunderImageUI = Instance.new("ImageLabel")
     local TestLabelEN = Instance.new("TextLabel")
     local TestLabelVN = Instance.new("TextLabel")
+end
