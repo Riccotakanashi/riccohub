@@ -6,3 +6,8 @@ if not game.CoreGui:FindFirstChild("ThunderScreen") then
     local TestLabelEN = Instance.new("TextLabel")
     local TestLabelVN = Instance.new("TextLabel")
 end
+return {
+    CreateWindow = function(title)
+        print("Создано окно:", title)
+    end
+}
