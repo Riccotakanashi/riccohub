@@ -1,0 +1,7 @@
+if not game.CoreGui:FindFirstChild("ThunderScreen") then
+    local ThunderScreen = Instance.new("ScreenGui")
+    local ThunderToggleUI = Instance.new("TextButton")
+    local ThunderCornerUI = Instance.new("UICorner")
+    local ThunderImageUI = Instance.new("ImageLabel")
+    local TestLabelEN = Instance.new("TextLabel")
+    local TestLabelVN = Instance.new("TextLabel")
