@@ -8,6 +8,10 @@ if not game.CoreGui:FindFirstChild("ThunderScreen") then
 end
 return {
     CreateWindow = function(title)
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "MyWindow"
+        screenGui.Parent = game.CoreGui
         print("Создано окно:", title)
+        return screenGui
     end
 }
