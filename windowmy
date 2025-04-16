@@ -6,12 +6,57 @@ if not game.CoreGui:FindFirstChild("ThunderScreen") then
     local TestLabelEN = Instance.new("TextLabel")
     local TestLabelVN = Instance.new("TextLabel")
 end
+
 return {
     CreateWindow = function(title)
         local screenGui = Instance.new("ScreenGui")
         screenGui.Name = "MyWindow"
         screenGui.Parent = game.CoreGui
-        print("Создано окно:", title)
+
+        -- Основное окно
+        local mainFrame = Instance.new("Frame")
+        mainFrame.Size = UDim2.new(0, 400, 0, 300)
+        mainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+        mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        mainFrame.Parent = screenGui
+
+        -- Вкладки (TabButton)
+        local tabButtonsFrame = Instance.new("Frame")
+        tabButtonsFrame.Size = UDim2.new(1, 0, 0, 30)
+        tabButtonsFrame.BackgroundTransparency = 1
+        tabButtonsFrame.Parent = mainFrame
+
+        -- Контент вкладок
+        local tabsContent = Instance.new("Frame")
+        tabsContent.Size = UDim2.new(1, 0, 1, -30)
+        tabsContent.Position = UDim2.new(0, 0, 0, 30)
+        tabsContent.BackgroundTransparency = 1
+        tabsContent.Parent = mainFrame
+
+        -- Функция добавления вкладки
+        function screenGui:AddTab(tabTitle)
+            local tabButton = Instance.new("TextButton")
+            tabButton.Text = tabTitle
+            tabButton.Size = UDim2.new(0, 80, 0, 30)
+            tabButton.Position = UDim2.new(0, #tabButtonsFrame:GetChildren() * 80, 0, 0)
+            tabButton.Parent = tabButtonsFrame
+
+            local tabContent = Instance.new("ScrollingFrame")
+            tabContent.Size = UDim2.new(1, 0, 1, 0)
+            tabContent.Visible = false
+            tabContent.Parent = tabsContent
+
+            -- Переключение вкладок
+            tabButton.MouseButton1Click:Connect(function()
+                for _, child in ipairs(tabsContent:GetChildren()) do
+                    child.Visible = false
+                end
+                tabContent.Visible = true
+            end)
+
+            return tabContent
+        end
+
         return screenGui
     end
 }
