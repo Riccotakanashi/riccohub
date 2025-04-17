@@ -179,3 +179,24 @@ function RiccoUI:CreateWindow(options)
 end
 
 return RiccoUI
+RiccoUI.Styles = {
+    Window = {
+        BackgroundColor = Color3.fromRGB(60, 60, 60),
+        BorderColor = Color3.fromRGB(100, 100, 100),
+        BorderSizePixel = 1
+    },
+    TabButton = {
+        BackgroundColor = Color3.fromRGB(80, 80, 80),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        Font = Enum.Font.SourceSansBold,
+        TextSize = 14
+    }
+}
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = button
+
+local UIPadding = Instance.new("UIPadding")
+UIPadding.PaddingLeft = UDim.new(0, 10)
+UIPadding.PaddingRight = UDim.new(0, 10)
+UIPadding.Parent = button
