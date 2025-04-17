@@ -1,68 +1,181 @@
-if not game.CoreGui:FindFirstChild("ThunderScreen") then
-    local ThunderScreen = Instance.new("ScreenGui")
-    local ThunderToggleUI = Instance.new("TextButton")
-    local ThunderCornerUI = Instance.new("UICorner")
-    local ThunderImageUI = Instance.new("ImageLabel")
-    local TestLabelEN = Instance.new("TextLabel")
-    local TestLabelVN = Instance.new("TextLabel")
-end
+--[[
+  RiccoUI - простая библиотека для создания интерфейсов в Roblox
+  Основные функции:
+  - Создание окон с настраиваемыми параметрами
+  - Добавление вкладок через AddTab
+  - Поддержка кнопок, переключателей, слайдеров
+  - Гибкая система стилей
+]]
 
+local RiccoUI = {}
 
+-- Стили по умолчанию
+RiccoUI.Styles = {
+    Window = {
+        BackgroundColor = Color3.fromRGB(40, 40, 40),
+        Size = UDim2.new(0, 500, 0, 400),
+        Position = UDim2.new(0.5, -250, 0.5, -200)
+    },
+    TabButton = {
+        BackgroundColor = Color3.fromRGB(60, 60, 60),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(0, 100, 0, 30)
+    },
+    Button = {
+        BackgroundColor = Color3.fromRGB(80, 80, 80),
+        TextColor = Color3.fromRGB(255, 255, 255),
+        Size = UDim2.new(0, 120, 0, 30)
+    }
+}
 
-function window:AddTab(tabOptions)
-    -- 1. Создаём контейнеры, если они ещё не существуют
-    if not self.TabButtonsFrame then
-        -- Фрейм для кнопок вкладок
-        self.TabButtonsFrame = Instance.new("Frame")
-        self.TabButtonsFrame.Size = UDim2.new(1, 0, 0, 30)
-        self.TabButtonsFrame.Parent = self.Gui.MainFrame
+-- Создание нового окна
+function RiccoUI:CreateWindow(options)
+    options = options or {}
+    
+    -- Создаем основной контейнер
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "RiccoUI_Window"
+    screenGui.Parent = game.CoreGui
+    
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = options.Size or self.Styles.Window.Size
+    mainFrame.Position = options.Position or self.Styles.Window.Position
+    mainFrame.BackgroundColor3 = options.BackgroundColor or self.Styles.Window.BackgroundColor
+    mainFrame.Parent = screenGui
+    
+    -- Создаем контейнер для кнопок вкладок
+    local tabButtonsFrame = Instance.new("Frame")
+    tabButtonsFrame.Name = "TabButtons"
+    tabButtonsFrame.Size = UDim2.new(1, 0, 0, 30)
+    tabButtonsFrame.BackgroundTransparency = 1
+    tabButtonsFrame.Parent = mainFrame
+    
+    -- Создаем контейнер для контента вкладок
+    local tabsContentFrame = Instance.new("Frame")
+    tabsContentFrame.Name = "TabsContent"
+    tabsContentFrame.Size = UDim2.new(1, 0, 1, -30)
+    tabsContentFrame.Position = UDim2.new(0, 0, 0, 30)
+    tabsContentFrame.BackgroundTransparency = 1
+    tabsContentFrame.Parent = mainFrame
+    
+    -- Создаем объект окна
+    local window = {
+        Gui = screenGui,
+        Tabs = {},
+        CurrentTab = nil
+    }
+    
+    -- Метод для добавления вкладки
+    function window:AddTab(tabOptions)
+        tabOptions = tabOptions or {}
         
-        -- Фрейм для контента вкладок
-        self.TabsContentFrame = Instance.new("Frame")
-        self.TabsContentFrame.Size = UDim2.new(1, 0, 1, -30)
-        self.TabsContentFrame.Position = UDim2.new(0, 0, 0, 30)
-        self.TabsContentFrame.Parent = self.Gui.MainFrame
+        -- Создаем кнопку вкладки
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = "Tab_" .. (tabOptions.Title or "Tab")
+        tabButton.Text = tabOptions.Title or "Вкладка"
+        tabButton.Size = self.Styles.TabButton.Size
+        tabButton.Position = UDim2.new(0, #self.Tabs * 100, 0, 0)
+        tabButton.BackgroundColor3 = self.Styles.TabButton.BackgroundColor
+        tabButton.TextColor3 = self.Styles.TabButton.TextColor
+        tabButton.Parent = self.Gui.MainFrame.TabButtons
+        
+        -- Создаем контент вкладки
+        local tabContent = Instance.new("ScrollingFrame")
+        tabContent.Name = "Content_" .. (tabOptions.Title or "Tab")
+        tabContent.Size = UDim2.new(1, 0, 1, 0)
+        tabContent.BackgroundTransparency = 1
+        tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
+        tabContent.ScrollBarThickness = 5
+        tabContent.Visible = (#self.Tabs == 0) -- Первая вкладка видима
+        tabContent.Parent = self.Gui.MainFrame.TabsContent
+        
+        -- Создаем объект вкладки
+        local tab = {
+            Name = tabOptions.Title or "Вкладка",
+            Button = tabButton,
+            Content = tabContent,
+            Elements = {}
+        }
+        
+        -- Добавляем обработчик клика
+        tabButton.MouseButton1Click:Connect(function()
+            for _, t in ipairs(self.Tabs) do
+                t.Content.Visible = false
+            end
+            tabContent.Visible = true
+            self.CurrentTab = tab
+        end)
+        
+        table.insert(self.Tabs, tab)
+        
+        -- Делаем первую вкладку активной
+        if #self.Tabs == 1 then
+            self.CurrentTab = tab
+        end
+        
+        -- Возвращаем объект с методами для добавления элементов
+        return {
+            -- Добавление кнопки
+            AddButton = function(options)
+                options = options or {}
+                
+                local button = Instance.new("TextButton")
+                button.Name = options.Name or "Button"
+                button.Text = options.Text or options.Name or "Кнопка"
+                button.Size = options.Size or self.Styles.Button.Size
+                button.Position = UDim2.new(0, 10, 0, #tab.Elements * 35 + 10)
+                button.BackgroundColor3 = options.BackgroundColor or self.Styles.Button.BackgroundColor
+                button.TextColor3 = options.TextColor or self.Styles.Button.TextColor
+                button.Parent = tabContent
+                
+                if options.Callback then
+                    button.MouseButton1Click:Connect(options.Callback)
+                end
+                
+                table.insert(tab.Elements, button)
+                return button
+            end,
+            
+            -- Добавление слайдера
+            AddSlider = function(options)
+                options = options or {}
+                
+                local sliderFrame = Instance.new("Frame")
+                sliderFrame.Name = options.Name or "Slider"
+                sliderFrame.Size = UDim2.new(0.9, 0, 0, 40)
+                sliderFrame.Position = UDim2.new(0.05, 0, 0, #tab.Elements * 45 + 10)
+                sliderFrame.BackgroundTransparency = 1
+                sliderFrame.Parent = tabContent
+                
+                local label = Instance.new("TextLabel")
+                label.Name = "Label"
+                label.Text = options.Text or options.Name or "Слайдер"
+                label.Size = UDim2.new(1, 0, 0, 20)
+                label.BackgroundTransparency = 1
+                label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                label.Parent = sliderFrame
+                
+                local slider = Instance.new("Frame")
+                slider.Name = "Track"
+                slider.Size = UDim2.new(1, 0, 0, 10)
+                slider.Position = UDim2.new(0, 0, 0, 25)
+                slider.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                slider.Parent = sliderFrame
+                
+                local fill = Instance.new("Frame")
+                fill.Name = "Fill"
+                fill.Size = UDim2.new(0.5, 0, 1, 0)
+                fill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+                fill.Parent = slider
+                
+                table.insert(tab.Elements, sliderFrame)
+                return sliderFrame
+            end
+        }
     end
     
-    -- 2. Создаём кнопку вкладки
-    local tabButton = Instance.new("TextButton")
-    tabButton.Text = tabOptions.Title or "Вкладка"
-    tabButton.Size = UDim2.new(0, 100, 0, 30)
-    tabButton.Position = UDim2.new(0, #self.Tabs * 100, 0, 0)
-    tabButton.Parent = self.TabButtonsFrame
-    
-    -- 3. Создаём контент вкладки
-    local tabContent = Instance.new("Frame")
-    tabContent.Size = UDim2.new(1, 0, 1, 0)
-    tabContent.Visible = (#self.Tabs == 0) -- Первая вкладка видна по умолчанию
-    tabContent.Parent = self.TabsContentFrame
-    
-    -- 4. Добавляем обработчик клика
-    tabButton.MouseButton1Click:Connect(function()
-        for _, tab in ipairs(self.Tabs) do
-            tab.Content.Visible = false
-        end
-        tabContent.Visible = true
-    end)
-    
-    -- 5. Сохраняем вкладку
-    local tab = {
-        Button = tabButton,
-        Content = tabContent,
-        Elements = {}
-    }
-    table.insert(self.Tabs, tab)
-    
-    return {
-        -- Методы для добавления элементов на вкладку
-        AddButton = function(self, text, callback)
-            local button = Instance.new("TextButton")
-            button.Text = text
-            button.Size = UDim2.new(0, 120, 0, 30)
-            button.Position = UDim2.new(0, 10, 0, #tab.Elements * 35 + 10)
-            button.Parent = tabContent
-            button.MouseButton1Click:Connect(callback)
-            table.insert(tab.Elements, button)
-        end
-    }
+    return window
 end
+
+return RiccoUI
