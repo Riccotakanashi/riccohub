@@ -8,39 +8,54 @@ if not game.CoreGui:FindFirstChild("ThunderScreen") then
 end
 
 
-function window:AddTab(tabName)
-    local tab = {
-        Name = tabName,
-        Elements = {}
-    }
 
-    -- Создаём кнопку вкладки
+function window:AddTab(tabOptions)
+    -- 1. Создаём контейнеры, если они ещё не существуют
+    if not self.TabButtonsFrame then
+        -- Фрейм для кнопок вкладок
+        self.TabButtonsFrame = Instance.new("Frame")
+        self.TabButtonsFrame.Size = UDim2.new(1, 0, 0, 30)
+        self.TabButtonsFrame.Parent = self.Gui.MainFrame
+        
+        -- Фрейм для контента вкладок
+        self.TabsContentFrame = Instance.new("Frame")
+        self.TabsContentFrame.Size = UDim2.new(1, 0, 1, -30)
+        self.TabsContentFrame.Position = UDim2.new(0, 0, 0, 30)
+        self.TabsContentFrame.Parent = self.Gui.MainFrame
+    end
+    
+    -- 2. Создаём кнопку вкладки
     local tabButton = Instance.new("TextButton")
-    tabButton.Text = tabName
-    tabButton.Size = UDim2.new(0, self.TabWidth, 0, 30)
-    tabButton.Position = UDim2.new(0, #self.Tabs * self.TabWidth, 0, 0)
-    tabButton.Parent = self.TabListFrame
-
-    -- Создаём контент вкладки
+    tabButton.Text = tabOptions.Title or "Вкладка"
+    tabButton.Size = UDim2.new(0, 100, 0, 30)
+    tabButton.Position = UDim2.new(0, #self.Tabs * 100, 0, 0)
+    tabButton.Parent = self.TabButtonsFrame
+    
+    -- 3. Создаём контент вкладки
     local tabContent = Instance.new("Frame")
-    tabContent.Size = UDim2.new(1, 0, 1, -30)
-    tabContent.Position = UDim2.new(0, 0, 0, 30)
+    tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.Visible = (#self.Tabs == 0) -- Первая вкладка видна по умолчанию
-    tabContent.Parent = self.ContentFrame
-
-    -- Сохраняем вкладку
-    table.insert(self.Tabs, tab)
-
-    -- Обработчик клика
+    tabContent.Parent = self.TabsContentFrame
+    
+    -- 4. Добавляем обработчик клика
     tabButton.MouseButton1Click:Connect(function()
-        for _, t in ipairs(self.Tabs) do
-            t.Content.Visible = false
+        for _, tab in ipairs(self.Tabs) do
+            tab.Content.Visible = false
         end
         tabContent.Visible = true
     end)
-
+    
+    -- 5. Сохраняем вкладку
+    local tab = {
+        Button = tabButton,
+        Content = tabContent,
+        Elements = {}
+    }
+    table.insert(self.Tabs, tab)
+    
     return {
-        AddButton = function(text, callback)
+        -- Методы для добавления элементов на вкладку
+        AddButton = function(self, text, callback)
             local button = Instance.new("TextButton")
             button.Text = text
             button.Size = UDim2.new(0, 120, 0, 30)
